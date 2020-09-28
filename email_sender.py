@@ -27,7 +27,7 @@ def send_email():
     message.attachment = attachedFile
 
     #Use own API Key
-    sg = SendGridAPIClient("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")
+    sg = SendGridAPIClient("")
     response = sg.send(message)
     print(response.status_code, response.body, response.headers)
 
