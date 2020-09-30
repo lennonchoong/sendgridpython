@@ -3,34 +3,50 @@ import sys
 import base64
 
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import (Mail, Attachment, FileContent, FileName, FileType, Disposition)
+from sendgrid.helpers.mail import (Mail, Email, Content, Cc, Bcc, Personalization, Attachment, FileContent, FileName, FileType, Disposition)
 
-def send_email():
-    from_email, to_email, cc, subject = sys.argv[1], sys.argv[2], sys.argv[3] 
+def send_email(string):
+    input_string = string.split("&")
+    hashset = {}
 
-    message = Mail(
-        from_email='lennonchoong@gmail.com',
-        to_emails='lennonchoong@yahoo.com',
-        subject='Sending with Twilio SendGrid is Fun',
-        html_content='<strong>and easy to do anywhere, even with Python</strong>'
-    )
+    for substring in input_string:
+        key, val = substring.split("=")
+        hashset[key] = val.replace("'", "")
 
-    with open(sys.argv[1], 'rb') as f:
-        data = f.read()
-        f.close()
-    encoded_file = base64.b64encode(data).decode()
+    message = Mail()
 
-    attachedFile = Attachment(
-        FileContent(encoded_file),
-        FileName(str(sys.argv[1])), #File directory
-        FileType(str(sys.argv[2])), #MIME type
-        Disposition('attachment')
-    )
-    message.attachment = attachedFile
+    for key in hashset:
+        if key == "to_emails":
+            personalization = Personalization()
+            for emails in hashset[key].split(";"):
+                personalization.add_to(Email(emails))
+            message.add_personalization(personalization)
+        elif key == "content":
+            message.add_content(Content(hashset['content_type'], hashset[key]))
+        elif key == "cc_email":
+            for emails in hashset[key].split(";"):
+                message.add_cc(Cc(emails))
+        elif key == "bcc_email":
+            for emails in hashset[key].split(";"):
+                message.add_bcc(Bcc(emails))
+        elif "attachment" in key and "_type" not in key:
+            attached_file = Attachment()
+            with open(hashset[key], 'rb') as f:
+                data = f.read()
+                f.close()
+            encoded_file = base64.b64encode(data).decode()
+            attached_file.file_content = FileContent(encoded_file)
+            attached_file.file_name = FileName(hashset[key][hashset[key].rfind("/") + 1:])
+            attached_file.file_type = FileType(hashset[key + "_type"])
+            attached_file.disposition =  Disposition('attachment')
+            message.add_attachment(attached_file)
+        else:
+            setattr(message, key, hashset[key])
 
     #Use own API Key
     sg = SendGridAPIClient("")
     response = sg.send(message)
+    print("REQUEST BODY : " + str(message.get()))
     print(response.status_code, response.body, response.headers)
 
-send_email()
+send_email(sys.argv[1])
