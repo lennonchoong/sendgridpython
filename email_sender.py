@@ -13,21 +13,21 @@ def send_email():
         html_content='<strong>and easy to do anywhere, even with Python</strong>'
     )
 
-    with open(sys.argv[0], 'rb') as f:
+    with open(sys.argv[1], 'rb') as f:
         data = f.read()
         f.close()
     encoded_file = base64.b64encode(data).decode()
 
     attachedFile = Attachment(
         FileContent(encoded_file),
-        FileName(str(sys.argv[0])), #File directory
-        FileType(str(sys.argv[1])), #MIME type
+        FileName(str(sys.argv[1])), #File directory
+        FileType(str(sys.argv[2])), #MIME type
         Disposition('attachment')
     )
     message.attachment = attachedFile
 
     #Use own API Key
-    sg = SendGridAPIClient("")
+    sg = SendGridAPIClient("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")
     response = sg.send(message)
     print(response.status_code, response.body, response.headers)
 
