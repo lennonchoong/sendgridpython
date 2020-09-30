@@ -6,6 +6,8 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import (Mail, Attachment, FileContent, FileName, FileType, Disposition)
 
 def send_email():
+    from_email, to_email, cc, subject = sys.argv[1], sys.argv[2], sys.argv[3] 
+
     message = Mail(
         from_email='lennonchoong@gmail.com',
         to_emails='lennonchoong@yahoo.com',
@@ -27,7 +29,7 @@ def send_email():
     message.attachment = attachedFile
 
     #Use own API Key
-    sg = SendGridAPIClient("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")
+    sg = SendGridAPIClient("")
     response = sg.send(message)
     print(response.status_code, response.body, response.headers)
 
