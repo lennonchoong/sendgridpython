@@ -12,7 +12,7 @@ def send_email(string):
     for substring in input_string:
         key, val = substring.split("=")
         hashset[key] = val.replace("'", "")
-
+    sys.stdout.write(str(hashset))
     message = Mail()
 
     for key in hashset:
@@ -46,7 +46,7 @@ def send_email(string):
     #Use own API Key
     sg = SendGridAPIClient("")
     response = sg.send(message)
-    print("REQUEST BODY : " + str(message.get()))
+    sys.stdout.write("REQUEST BODY : " + str(message.get()))
     print(response.status_code, response.body, response.headers)
 
 send_email(sys.argv[1])
